@@ -1,27 +1,29 @@
 package com.bdev.smart.config.data;
 
-import lombok.Getter;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 @SuppressWarnings("unused")
 public class SmartConfigValue<T> {
-    @Getter private T value;
+    private final AtomicReference<T> value;
 
-    private List<Consumer<T>> listeners = new ArrayList<>();
+    private final CopyOnWriteArrayList<Consumer<T>> listeners = new CopyOnWriteArrayList<>();
 
     public SmartConfigValue(T value) {
-        this.value = value;
+        this.value = new AtomicReference<>(value);
+    }
+
+    public T getValue() {
+        return value.get();
     }
 
     public void override(T newValue) {
-        value = newValue;
+        value.set(newValue);
 
         for (Consumer<T> listener : listeners) {
             try {
-                listener.accept(value);
+                listener.accept(newValue);
             } catch (Exception e) {
                 /* Do nothing */
             }
