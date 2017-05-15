@@ -25,11 +25,13 @@ public class SmartConfigValue<T> {
     }
 
     public void override(T newValue) {
-        value.set(newValue);
+        T processedNewValue = SmartConfigValueTypeChecker.process(value.get(), newValue);
+
+        value.set(processedNewValue);
 
         for (Consumer<T> listener : listeners) {
             try {
-                listener.accept(newValue);
+                listener.accept(processedNewValue);
             } catch (Exception e) {
                 /* Do nothing */
             }
