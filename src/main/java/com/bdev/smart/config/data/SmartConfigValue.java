@@ -8,32 +8,19 @@ import java.util.function.Consumer;
 public class SmartConfigValue<T> {
     private final String name;
     private final AtomicReference<T> value;
-    private final boolean readProtected;
-    private final boolean overrideProtected;
 
     private final CopyOnWriteArrayList<Consumer<T>> listeners = new CopyOnWriteArrayList<>();
 
-    public SmartConfigValue(String name, T value, boolean readProtected, boolean overrideProtected) {
+    public SmartConfigValue(String name, T value) {
         this.name = name;
         this.value = new AtomicReference<>(value);
-
-        this.readProtected = readProtected;
-        this.overrideProtected = overrideProtected;
     }
 
     public T getValue() {
         return getValue(false);
     }
 
-    public T forceGetValue() {
-        return getValue(true);
-    }
-
     private T getValue(boolean forceRead) {
-        if (readProtected && !forceRead) {
-            throw new RuntimeException("Unforced read is forbidden");
-        }
-
         return value.get();
     }
 
@@ -50,10 +37,6 @@ public class SmartConfigValue<T> {
     }
 
     private void override(T newValue, boolean forceOverride) {
-        if (overrideProtected && !forceOverride) {
-            throw new RuntimeException("Unforced override is forbidden");
-        }
-
         T processedNewValue = SmartConfigValueTypeChecker.process(value.get(), newValue);
 
         value.set(processedNewValue);
