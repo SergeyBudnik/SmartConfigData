@@ -2,18 +2,22 @@ package com.bdev.smart.config.data;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 class SmartConfigValueTypeChecker {
     @SuppressWarnings("unchecked")
-    static <T> T process(T oldValue, T newValue) {
+    static <T> T process(String name, T oldValue, T newValue) {
+        Function<T, Boolean> isNumeric = it -> it instanceof Integer || it instanceof Long;
+
         boolean isSameClass = oldValue.getClass() == newValue.getClass();
+        boolean isBothNumeric = isNumeric.apply(oldValue) && isNumeric.apply(newValue);
         boolean isList = newValue instanceof List;
 
-        if (!isSameClass && !isList) {
-            throw new RuntimeException();
+        if (!isSameClass && !isBothNumeric && !isList) {
+            throw new RuntimeException("Types mismatch for property: '" + name + "'");
         }
 
-        if (newValue instanceof List) {
+        if (isList) {
             Object oldValueElement = ((List) oldValue).get(0);
 
             for (Object newValueElement : (List) newValue) {
@@ -23,6 +27,8 @@ class SmartConfigValueTypeChecker {
             }
 
             return (T) Collections.unmodifiableList((List) newValue);
+        } else if (isBothNumeric){
+            return (T) Long.valueOf(newValue.toString());
         } else {
             return newValue;
         }
