@@ -16,7 +16,7 @@ public class SmartConfigValue<T> {
         this.value = new AtomicReference<>(value);
     }
 
-    private T getValue() {
+    public T getValue() {
         return value.get();
     }
 
@@ -24,7 +24,7 @@ public class SmartConfigValue<T> {
         return name;
     }
 
-    private void override(T newValue) {
+    public void override(T newValue) {
         T processedNewValue = SmartConfigValueTypeChecker.process(name, value.get(), newValue);
 
         value.set(processedNewValue);
